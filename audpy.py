@@ -11,6 +11,9 @@ except ImportError:
     sys.exit(1)
 
 
+PASTA_PADRAO = r"" #Coloque a pasta que quiser 
+
+
 def verificar_ffmpeg() -> bool:
     """Verifica se o ffmpeg está disponível no PATH."""
     return shutil.which("ffmpeg") is not None
@@ -72,11 +75,7 @@ def montar_opcoes(pasta_destino: str) -> dict:
     }
 
 
-def baixar_mp3(
-    url: str,
-    pasta_destino: str = "downloads"
-) -> bool:
-
+def baixar_mp3(url: str, pasta_destino: str = PASTA_PADRAO) -> bool:
     """
     Baixa o áudio de um único vídeo do YouTube
     e salva como MP3.
@@ -118,47 +117,59 @@ def baixar_mp3(
 
     return False
 
-quantidade = int(input("Quantas músicas você quer baixar? (1-40): "))
 
-if quantidade < 1 or quantidade > 40:
-    print("❌ Escolha uma quantidade entre 1 e 40.")
-
-else:
-    print(f"\nVocê escolheu baixar {quantidade} músicas!")
+def baixar_varias(quantidade: int, pasta_destino: str = PASTA_PADRAO):
+    """Pede 'quantidade' links ao usuário e baixa todos, um por um."""
 
     links = []
-
     for numero in range(quantidade):
-        link = input(f"Digite o link da música {numero + 1}: ")
+        link = input(f"Digite o link da música {numero + 1}: ").strip()
         links.append(link)
 
-    print("\n {} Links recebidos!".format(links))
+    print(f"\n📋 {len(links)} link(s) recebido(s)!")
 
     for link in links:
-        baixar_mp3(link)
+        if link:
+            baixar_mp3(link, pasta_destino)
+
 
 def loop_principal():
-
-    print("=" * 50)
-    print(" Audpy (MP3)")
-    print("=" * 50)
-    print("Digite 'sair' a qualquer momento para fechar.\n")
 
     if not verificar_ffmpeg():
         print("⚠️ AVISO: ffmpeg não foi encontrado no PATH.")
         print("   A conversão para MP3 vai falhar sem ele.")
         print("   Instale o ffmpeg antes de continuar.\n")
 
+    print(f"📁 Pasta de destino: {PASTA_PADRAO}\n")
+
+    # Se um link foi passado como argumento na linha de comando, baixa direto.
     if len(sys.argv) > 1:
         baixar_mp3(sys.argv[1])
+        return
+
+    # Pergunta se o usuário quer baixar em lote (quantidade fixa) ou no modo livre.
+    resposta = input(
+        "Quer informar quantas músicas vai baixar de uma vez? (s/N): "
+    ).strip().lower()
+
+    if resposta == "s":
+        try:
+            quantidade = int(input("Quantas músicas você quer baixar? (1-40): "))
+        except ValueError:
+            print("❌ Valor inválido. Voltando ao modo de links avulsos.\n")
+        else:
+            if quantidade < 1 or quantidade > 40:
+                print("❌ Escolha uma quantidade entre 1 e 40.")
+            else:
+                baixar_varias(quantidade)
+                return
+
+    print("\nDigite os links um por um (ou 'sair' para encerrar):\n")
 
     while True:
 
         try:
-            link = input(
-                "\nCole a URL de um vídeo do YouTube "
-                "(ou 'sair'): "
-            ).strip()
+            link = input().strip()
 
         except (EOFError, KeyboardInterrupt):
             print("\nEncerrando... até a próxima! 🎧")
@@ -168,9 +179,7 @@ def loop_principal():
             print("Encerrando... até a próxima! 🎧")
             break
 
-        if not link.lower().startswith(
-            ("http://", "https://")
-        ):
+        if not link.lower().startswith(("http://", "https://")):
             print("⚠️ Isso não parece uma URL válida.")
             continue
 

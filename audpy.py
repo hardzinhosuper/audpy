@@ -11,7 +11,7 @@ except ImportError:
     sys.exit(1)
 
 
-PASTA_PADRAO = r"" #Coloque a pasta que quiser 
+PASTA_PADRAO = r"C:\Users\hard\Desktop\Python\downloads"
 
 
 def verificar_ffmpeg() -> bool:
@@ -147,24 +147,8 @@ def loop_principal():
         baixar_mp3(sys.argv[1])
         return
 
-    # Pergunta se o usuário quer baixar em lote (quantidade fixa) ou no modo livre.
-    resposta = input(
-        "Quer informar quantas músicas vai baixar de uma vez? (s/N): "
-    ).strip().lower()
 
-    if resposta == "s":
-        try:
-            quantidade = int(input("Quantas músicas você quer baixar? (1-40): "))
-        except ValueError:
-            print("❌ Valor inválido. Voltando ao modo de links avulsos.\n")
-        else:
-            if quantidade < 1 or quantidade > 40:
-                print("❌ Escolha uma quantidade entre 1 e 40.")
-            else:
-                baixar_varias(quantidade)
-                return
-
-    print("\nDigite os links um por um (ou 'sair' para encerrar):\n")
+    print("\n Digite os links :\n")
 
     while True:
 
